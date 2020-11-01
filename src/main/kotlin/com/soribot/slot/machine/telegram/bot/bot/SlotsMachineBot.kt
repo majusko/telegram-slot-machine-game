@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
+import java.net.URLEncoder
 
 @Component
 @ExperimentalCoroutinesApi
@@ -28,7 +29,7 @@ class SlotsMachineBot(
         slotMachineSender.subscribe { execute(it) }
     }
 
-    override fun getBotToken() = token
+    override fun getBotToken(): String = URLEncoder.encode(token, "utf-8")
 
     override fun getBotUsername() = username
 
