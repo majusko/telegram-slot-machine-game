@@ -17,6 +17,17 @@ class RedisConfiguration {
     @Value("\${app.redis.configuration.port}")
     var redisPort: Int = 0
 
+    @Value("\${app.redis.configuration.password:}")
+    var password: String = ""
+
     @Bean
-    fun redisConnectionFactory() = LettuceConnectionFactory(RedisStandaloneConfiguration(redisHost, redisPort))
+    fun redisConnectionFactory(): LettuceConnectionFactory {
+        val config = RedisStandaloneConfiguration(redisHost, redisPort)
+
+        if (password.isNotEmpty()) {
+            config.setPassword(password)
+        }
+
+        return LettuceConnectionFactory(config)
+    }
 }
