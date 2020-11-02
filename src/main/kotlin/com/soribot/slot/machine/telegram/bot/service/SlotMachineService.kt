@@ -30,7 +30,6 @@ class SlotMachineService(
     }
 
     private fun diceProcessing(message: Message) = message.dice.also {
-        println(it.value)
         when (it.value) {
             jackPotValueId -> jackpot(message)
             lemonValueId -> lemon(message)
