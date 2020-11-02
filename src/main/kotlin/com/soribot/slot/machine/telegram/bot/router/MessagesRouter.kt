@@ -1,6 +1,7 @@
 package com.soribot.slot.machine.telegram.bot.router
 
 import com.soribot.slot.machine.telegram.bot.service.LeaderboardService
+import com.soribot.slot.machine.telegram.bot.service.ProfileManagementService
 import com.soribot.slot.machine.telegram.bot.service.RegistrationService
 import com.soribot.slot.machine.telegram.bot.service.SlotMachineService
 import com.soribot.slot.machine.telegram.bot.utils.subscribe
@@ -15,7 +16,8 @@ class MessagesRouter(
     slotMachineReceiver: BroadcastChannel<Update>,
     val registrationService: RegistrationService,
     val leaderboardService: LeaderboardService,
-    val slotMachineService: SlotMachineService
+    val slotMachineService: SlotMachineService,
+    val profileManagementService: ProfileManagementService
 ) {
 
     init {
@@ -26,5 +28,6 @@ class MessagesRouter(
         registrationService.start(update)
         slotMachineService.start(update)
         leaderboardService.start(update)
+        profileManagementService.start(update)
     }
 }
