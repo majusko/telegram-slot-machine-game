@@ -14,8 +14,12 @@ class LeaderboardService(
 ) {
     companion object {
         val leaderBoardTrigger = listOf("leaderboard", "tabulka", "liderów", "tablica")
-        const val leaderboardLine = "%s - %s rekordów "
+        const val recordsLine = "%s - %s rekordów (%s cytrynowy, %s bar, %s wiśnia)"
+        const val recordsText = "Rekordy: \n"
         const val leaderboardText = "Tablica: \n"
+        const val leaderboardLine = "%s - %s punktów"
+        const val pointsForRecord = 10
+        const val pointsForOther = 1
     }
 
     fun start(update: Update) {
@@ -24,10 +28,20 @@ class LeaderboardService(
         }
     }
 
-    fun sendLeaderboards(message: Message) = profileService.findAll()
-        .sortedByDescending { it.numberOfJackpots }
-        .joinToString(separator = "\n") {
-            leaderboardLine.format(it.firstName + "" + it.lastName, it.numberOfJackpots)
-        }
-        .also { botSender.textAsync(message.chatId, leaderboardText + it) }
+    fun sendLeaderboards(message: Message) {
+        val allUsers = profileService.findAll()
+        val pointsLeaderBoardText = allUsers
+            .map { it to (it.numberOfJackpots * pointsForRecord) + ((it.threeLemons + it.threeBars + it.threeCherries) * pointsForOther) }
+            .sortedByDescending { it.second }
+            .joinToString(separator = "\n") {
+                leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second)
+            }.let { leaderboardText + it }
+        val recordsLeaderBoardText = allUsers.sortedByDescending { it.numberOfJackpots }
+            .joinToString(separator = "\n") {
+                recordsLine.format(it.firstName + " " + it.lastName, it.numberOfJackpots, it.threeLemons, it.threeBars, it.threeCherries)
+            }
+            .let { recordsText + it }
+
+        botSender.textAsync(message.chatId, "$pointsLeaderBoardText\n\n$recordsLeaderBoardText")
+    }
 }

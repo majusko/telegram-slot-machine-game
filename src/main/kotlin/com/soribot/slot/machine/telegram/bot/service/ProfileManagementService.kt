@@ -1,6 +1,7 @@
 package com.soribot.slot.machine.telegram.bot.service
 
 import com.soribot.slot.machine.telegram.bot.bot.BotSender
+import com.soribot.slot.machine.telegram.bot.repository.Profile
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
@@ -17,6 +18,9 @@ class ProfileManagementService(
         const val successfullySaved = "Bardzo dobrze przechowywane."
         const val editTrigger = "nastav"
         val recordTrigger = listOf("rekord", "kurtk")
+        val lemonTrigger = listOf("citron", "cytryn")
+        val barTrigger = listOf("bar")
+        val cherryTrigger = listOf("ceresn", "wisnia")
     }
 
     fun start(update: Update) = updateProfile(update.message)
@@ -40,15 +44,24 @@ class ProfileManagementService(
     private fun editProfileByCommand(message: Message, command: String, amount: String, field: String) =
         command.handleNumber(amount)?.also { convertedAmount ->
             when {
-                recordTrigger.any { field.contains(it) } -> {
-                    profileService.findByIdOrRegister(message.replyToMessage)
-                        .apply { numberOfJackpots = convertedAmount }
-                        .also {
-                            profileService.save(it)
-                            botSender.textAsync(message.chatId, successfullySaved)
-                            leaderboardService.sendLeaderboards(message)
-                        }
-                }
+                recordTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
+                    .apply { numberOfJackpots = convertedAmount }
+                    .also { afterEdit(it, message) }
+                lemonTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
+                    .apply { threeLemons = convertedAmount }
+                    .also { afterEdit(it, message) }
+                barTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
+                    .apply { threeBars = convertedAmount }
+                    .also { afterEdit(it, message) }
+                cherryTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
+                    .apply { threeCherries = convertedAmount }
+                    .also { afterEdit(it, message) }
             }
         }
+
+    fun afterEdit(profile: Profile, message: Message) {
+        profileService.save(profile)
+        botSender.textAsync(message.chatId, successfullySaved)
+        leaderboardService.sendLeaderboards(message)
+    }
 }

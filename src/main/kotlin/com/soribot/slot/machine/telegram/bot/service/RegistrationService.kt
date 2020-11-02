@@ -19,16 +19,8 @@ class RegistrationService(
         val nameRegex = "([A-Z][a-zA-Z]*)".toRegex()
     }
 
-    fun start(update: Update) = profileService.findById(update.message.from.id)
-        ?.also { profileValidation(it, update.message) }
-        ?: firstUserRegistration(update.message)
-
-    fun firstUserRegistration(message: Message) = Profile(
-        firstName = message.from.firstName ?: "",
-        lastName = message.from.lastName ?: "",
-        username = message.from.userName ?: "",
-        id = message.from.id
-    ).let { profileService.saveAndNotify(it, message.chatId) }
+    fun start(update: Update) = profileService.findByIdOrRegister(update.message)
+        .also { profileValidation(it, update.message) }
 
     private fun profileValidation(profile: Profile, message: Message) = profile.also {
         when {
