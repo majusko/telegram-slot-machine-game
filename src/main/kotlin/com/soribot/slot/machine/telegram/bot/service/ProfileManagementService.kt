@@ -27,7 +27,7 @@ class ProfileManagementService(
 
     private fun updateProfile(message: Message) {
         if (message.hasText() && message.isReply) {
-            message.text.split("\\r\\n|\\n|\\r").forEach {
+            message.text.split("\\r?\\n").forEach {
                 val commands = it.split("\\s".toRegex())
 
                 if (commands.size == 3) {
