@@ -27,11 +27,12 @@ class ProfileManagementService(
 
     private fun updateProfile(message: Message) {
         if (message.hasText() && message.isReply) {
-            message.text.split("\\r?\\n").forEach {
-                val commands = it.split("\\s".toRegex())
-
-                if (commands.size == 3) {
-                    editProfileByCommand(message, commands[0], commands[1], commands[2])
+            message.text.split("\\s".toRegex()).chunked(3).filter { it.size == 3 }.map {
+                editProfileByCommand(message, it[0], it[1], it[2])
+            }.also {
+                if(it.isNotEmpty()) {
+                    botSender.textAsync(message.chatId, successfullySaved)
+                    leaderboardService.sendLeaderboards(message)
                 }
             }
         }
@@ -63,7 +64,5 @@ class ProfileManagementService(
 
     fun afterEdit(profile: Profile, message: Message) {
         profileService.save(profile)
-        botSender.textAsync(message.chatId, successfullySaved)
-        leaderboardService.sendLeaderboards(message)
     }
 }
