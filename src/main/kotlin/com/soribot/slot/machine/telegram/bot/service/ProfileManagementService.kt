@@ -27,10 +27,12 @@ class ProfileManagementService(
 
     private fun updateProfile(message: Message) {
         if (message.hasText() && message.isReply) {
-            val commands = message.text.split("\\s".toRegex())
+            message.text.split("\\r\\n|\\n|\\r").forEach {
+                val commands = it.split("\\s".toRegex())
 
-            if (commands.size == 3) {
-                editProfileByCommand(message, commands[0], commands[1], commands[2])
+                if (commands.size == 3) {
+                    editProfileByCommand(message, commands[0], commands[1], commands[2])
+                }
             }
         }
     }
