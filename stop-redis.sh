@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-docker stop local-database
-docker rm local-database
+docker stop my-redis-container
+docker rm my-redis-container
