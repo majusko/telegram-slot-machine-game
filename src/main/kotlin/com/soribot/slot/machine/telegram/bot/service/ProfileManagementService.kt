@@ -32,7 +32,7 @@ class ProfileManagementService(
             }.also {
                 if(it.isNotEmpty()) {
                     botSender.textAsync(message.chatId, successfullySaved)
-                    leaderboardService.sendLeaderboards(message)
+                    leaderboardService.sendLightLeaderboards(message)
                 }
             }
         }

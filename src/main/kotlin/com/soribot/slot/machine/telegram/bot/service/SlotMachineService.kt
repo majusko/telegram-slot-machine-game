@@ -85,6 +85,6 @@ class SlotMachineService(
     private fun afterWin(profile: Profile, message: Message) {
         profileService.save(profile)
         botSender.textAsync(message.chatId, congratsMessage.format(profile.firstName + " " + profile.lastName))
-        leaderboardService.sendLeaderboards(message)
+        leaderboardService.sendLightLeaderboards(message)
     }
 }

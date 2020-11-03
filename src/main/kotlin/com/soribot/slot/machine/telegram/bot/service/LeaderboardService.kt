@@ -1,6 +1,7 @@
 package com.soribot.slot.machine.telegram.bot.service
 
 import com.soribot.slot.machine.telegram.bot.bot.BotSender
+import com.soribot.slot.machine.telegram.bot.repository.Profile
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
@@ -29,18 +30,21 @@ class LeaderboardService(
         }
     }
 
+    fun sendLightLeaderboards(message: Message) = botSender
+        .textAsync(message.chatId, profileService.findAll().toLeaderboard())
+
+    fun List<Profile>.toLeaderboard() = map {
+        it to (it.numberOfJackpots * pointsForRecord) +
+            ((it.threeLemons + it.threeBars + it.threeCherries) * pointsForOther) +
+            it.diceWins * pointsForDice
+    }.sortedByDescending { it.second }
+        .joinToString(separator = "\n") {
+            leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second)
+        }.let { leaderboardText + it }
+
     fun sendLeaderboards(message: Message) {
         val allUsers = profileService.findAll()
-        val pointsLeaderBoardText = allUsers
-            .map {
-                it to (it.numberOfJackpots * pointsForRecord) +
-                    ((it.threeLemons + it.threeBars + it.threeCherries) * pointsForOther) +
-                    it.diceWins * pointsForDice
-            }
-            .sortedByDescending { it.second }
-            .joinToString(separator = "\n") {
-                leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second)
-            }.let { leaderboardText + it }
+        val pointsLeaderBoardText = allUsers.toLeaderboard()
         val recordsLeaderBoardText = allUsers.sortedByDescending { it.numberOfJackpots }
             .joinToString(separator = "\n") {
                 recordsLine.format(it.firstName + " " + it.lastName, it.numberOfJackpots, it.threeLemons, it.threeBars, it.threeCherries, it.diceWins)
