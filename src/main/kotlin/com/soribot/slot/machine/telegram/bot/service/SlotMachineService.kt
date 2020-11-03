@@ -37,10 +37,12 @@ class SlotMachineService(
 
     fun start(update: Update) {
         if (update.message.hasText() && !update.message.isReply && update.message.text.toIntOrNull() != null) {
+            profileService.incrementDicePushCount(update.message)
             botSender.diceAsync(update.message.chatId, update.message.messageId)
         }
 
         if (update.message.dice != null && update.message.dice.emoji == slotEmoji) {
+            profileService.incrementSlotPushCount(update.message)
             slotsProcess(update.message)
         }
     }

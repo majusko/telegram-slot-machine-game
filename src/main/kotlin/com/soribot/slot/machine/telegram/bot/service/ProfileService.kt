@@ -4,6 +4,7 @@ import com.soribot.slot.machine.telegram.bot.bot.BotSender
 import com.soribot.slot.machine.telegram.bot.repository.Profile
 import com.soribot.slot.machine.telegram.bot.repository.ProfileRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
@@ -12,12 +13,31 @@ import org.telegram.telegrambots.meta.api.objects.Message
 @ExperimentalCoroutinesApi
 class ProfileService(
     private val profileRepository: ProfileRepository,
-    private val botSender: BotSender
+    private val botSender: BotSender,
+    private val redisTemplate: RedisTemplate<String, Long>
 ) {
     companion object {
         const val successfullySaved = "Bardzo dobrze przechowywane."
         const val profileInformation = "Twój piękny profil: \n Imię i Nazwisko: %s \n kurtki: %s"
+        const val slotPushCount = "SlotPushCount"
+        const val dicePushCount = "DicePushCount"
     }
+
+    fun getSlotPushCount(id: Int) = redisTemplate.boundValueOps(slotPushCount + "_" + id).get() ?: 0
+
+    fun getDicePushCount(id: Int) = redisTemplate.boundValueOps(dicePushCount + "_" + id).get() ?: 0
+
+    fun incrementSlotPushCount(message: Message) = redisTemplate
+        .boundValueOps(slotPushCount + "_" + message.from.id)
+        .run {
+            set((get() ?: 0) + 1)
+        }
+
+    fun incrementDicePushCount(message: Message) = redisTemplate
+        .boundValueOps(dicePushCount + "_" + message.from.id)
+        .run {
+            set((get() ?: 0) + 1)
+        }
 
     fun findById(id: Int) = profileRepository.findByIdOrNull(id)
 

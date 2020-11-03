@@ -17,6 +17,7 @@ class ProfileManagementService(
     companion object {
         const val successfullySaved = "Bardzo dobrze przechowywane."
         const val editTrigger = "nastav"
+        const val myCountsTrigger = "kolko"
         val recordTrigger = listOf("rekord", "kurtk")
         val lemonTrigger = listOf("citron", "cytryn")
         val barTrigger = listOf("bar")
@@ -30,11 +31,22 @@ class ProfileManagementService(
             message.text.split("\\s".toRegex()).chunked(3).filter { it.size == 3 }.map {
                 editProfileByCommand(message, it[0], it[1], it[2])
             }.also {
-                if(it.isNotEmpty()) {
+                if (it.isNotEmpty()) {
                     botSender.textAsync(message.chatId, successfullySaved)
                     leaderboardService.sendLightLeaderboards(message)
                 }
             }
+        }
+        if (message.hasText() && message.text == myCountsTrigger) {
+            val userId = if (message.isReply) {
+                message.replyToMessage.from.id
+            } else {
+                message.from.id
+            }
+
+            val text = "Ovocie: " + profileService.getSlotPushCount(userId) + " \n" +
+                "Kostki: " + profileService.getDicePushCount(userId)
+            botSender.textAsync(message.chatId, text)
         }
     }
 
