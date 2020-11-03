@@ -8,15 +8,17 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod
+import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import java.net.URLEncoder
 
 @Component
 @ExperimentalCoroutinesApi
 class SlotsMachineBot(
+    val botSentMessages: BroadcastChannel<Message>,
     val slotMachineReceiver: BroadcastChannel<Update>,
-    slotMachineSender: BroadcastChannel<SendMessage>
+    slotMachineSender: BroadcastChannel<BotApiMethod<Message>>
 ) : TelegramLongPollingBot() {
 
     @Value("\${telegram.bot.username}")
@@ -26,7 +28,7 @@ class SlotsMachineBot(
     var token: String = ""
 
     init {
-        slotMachineSender.subscribe { execute(it) }
+        slotMachineSender.subscribe { botSentMessages.send(execute(it)) }
     }
 
     override fun getBotToken(): String = URLEncoder.encode(token, "utf-8")
