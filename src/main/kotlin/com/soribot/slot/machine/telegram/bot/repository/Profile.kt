@@ -15,6 +15,7 @@ data class Profile(
     var threeCherries: Int = 0,
     var threeLemons: Int = 0,
     var diceWins: Int = 0,
+    var spentPoints: Long = 0,
     @Id
     var id: Int = 0
 )

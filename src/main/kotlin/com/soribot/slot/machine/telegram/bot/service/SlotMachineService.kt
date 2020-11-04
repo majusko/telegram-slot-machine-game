@@ -25,6 +25,9 @@ class SlotMachineService(
         const val lemonValueId = 43
         const val cherryValueId = 22
         const val barValueId = 1
+        const val dicePrice = 0.01
+        const val slotPrice = 0.09
+        const val marioshiNumber = 100000
     }
 
     init {
@@ -38,11 +41,13 @@ class SlotMachineService(
     fun start(update: Update) {
         if (update.message.hasText() && !update.message.isReply && update.message.text.toIntOrNull() != null) {
             profileService.incrementDicePushCount(update.message)
+            points(update.message, dicePrice.toMarioshi())
             botSender.diceAsync(update.message.chatId, update.message.messageId)
         }
 
         if (update.message.dice != null && update.message.dice.emoji == slotEmoji) {
             profileService.incrementSlotPushCount(update.message)
+            points(update.message, slotPrice.toMarioshi())
             slotsProcess(update.message)
         }
     }
@@ -84,9 +89,15 @@ class SlotMachineService(
         .apply { diceWins += 1 }
         .also { afterWin(it, message) }
 
+    private fun points(message: Message, spent: Long) = profileService.findByIdOrRegister(message)
+        .apply { spentPoints += spent }
+        .also { profileService.save(it) }
+
     private fun afterWin(profile: Profile, message: Message) {
         profileService.save(profile)
         botSender.textAsync(message.chatId, congratsMessage.format(profile.firstName + " " + profile.lastName))
         leaderboardService.sendLightLeaderboards(message)
     }
+
+    private fun Double.toMarioshi() = (marioshiNumber * this).toLong()
 }

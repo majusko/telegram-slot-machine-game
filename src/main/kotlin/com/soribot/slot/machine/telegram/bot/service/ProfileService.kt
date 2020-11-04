@@ -21,11 +21,20 @@ class ProfileService(
         const val profileInformation = "Twój piękny profil: \n Imię i Nazwisko: %s \n kurtki: %s"
         const val slotPushCount = "SlotPushCount"
         const val dicePushCount = "DicePushCount"
+        const val spentPointsCount = "SpentPointsCount"
     }
 
     fun getSlotPushCount(id: Int) = redisTemplate.boundValueOps(slotPushCount + "_" + id).get() ?: 0
 
     fun getDicePushCount(id: Int) = redisTemplate.boundValueOps(dicePushCount + "_" + id).get() ?: 0
+
+    fun getSpentPointsCount(id: Int) = redisTemplate.boundValueOps(spentPointsCount + "_" + id).get() ?: 0
+
+    fun incrementSpentPointsCount(message: Message, amount: Long) = redisTemplate
+        .boundValueOps(spentPointsCount + "_" + message.from.id)
+        .run {
+            set((get() ?: 0) + amount)
+        }
 
     fun incrementSlotPushCount(message: Message) = redisTemplate
         .boundValueOps(slotPushCount + "_" + message.from.id)

@@ -22,6 +22,7 @@ class LeaderboardService(
         const val pointsForRecord = 10.0
         const val pointsForOther = 1.0
         const val pointsForDice = 0.3
+        const val defaultBonus = 100
     }
 
     fun start(update: Update) {
@@ -34,9 +35,10 @@ class LeaderboardService(
         .textAsync(message.chatId, profileService.findAll().toLeaderboard())
 
     fun List<Profile>.toLeaderboard() = map {
-        it to (it.numberOfJackpots * pointsForRecord) +
+        it to ((it.numberOfJackpots * pointsForRecord) +
             ((it.threeLemons + it.threeBars + it.threeCherries) * pointsForOther) +
-            it.diceWins * pointsForDice
+            it.diceWins * pointsForDice) +
+            defaultBonus - it.spentPoints.fromMarioshi()
     }.sortedByDescending { it.second }
         .joinToString(separator = "\n") {
             leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second)
@@ -53,4 +55,6 @@ class LeaderboardService(
 
         botSender.textAsync(message.chatId, "$pointsLeaderBoardText\n\n$recordsLeaderBoardText")
     }
+
+    private fun Long.fromMarioshi() = this.toDouble() / SlotMachineService.marioshiNumber.toDouble()
 }
