@@ -41,7 +41,7 @@ class LeaderboardService(
             defaultBonus - it.spentPoints.fromMarioshi()
     }.sortedByDescending { it.second }
         .joinToString(separator = "\n") {
-            leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second)
+            leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second.round(2))
         }.let { leaderboardText + it }
 
     fun sendLeaderboards(message: Message) {
@@ -57,4 +57,6 @@ class LeaderboardService(
     }
 
     private fun Long.fromMarioshi() = this.toDouble() / SlotMachineService.marioshiNumber.toDouble()
+
+    fun Double.round(decimals: Int = 2): Double = "%.${decimals}f".format(this).toDouble()
 }
