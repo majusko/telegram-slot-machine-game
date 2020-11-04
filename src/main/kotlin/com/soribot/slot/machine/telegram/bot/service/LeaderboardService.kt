@@ -2,6 +2,7 @@ package com.soribot.slot.machine.telegram.bot.service
 
 import com.soribot.slot.machine.telegram.bot.bot.BotSender
 import com.soribot.slot.machine.telegram.bot.repository.Profile
+import com.soribot.slot.machine.telegram.bot.repository.points
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
@@ -34,12 +35,8 @@ class LeaderboardService(
     fun sendLightLeaderboards(message: Message) = botSender
         .textAsync(message.chatId, profileService.findAll().toLeaderboard())
 
-    fun List<Profile>.toLeaderboard() = map {
-        it to ((it.numberOfJackpots * pointsForRecord) +
-            ((it.threeLemons + it.threeBars + it.threeCherries) * pointsForOther) +
-            it.diceWins * pointsForDice) +
-            defaultBonus - it.spentPoints.fromMarioshi()
-    }.sortedByDescending { it.second }
+    fun List<Profile>.toLeaderboard() = map { it to it.points() }
+        .sortedByDescending { it.second }
         .joinToString(separator = "\n") {
             leaderboardLine.format(it.first.firstName + " " + it.first.lastName, it.second.round(2))
         }.let { leaderboardText + it }
@@ -55,8 +52,6 @@ class LeaderboardService(
 
         botSender.textAsync(message.chatId, "$pointsLeaderBoardText\n\n$recordsLeaderBoardText")
     }
-
-    private fun Long.fromMarioshi() = this.toDouble() / SlotMachineService.marioshiNumber.toDouble()
-
-    fun Double.round(decimals: Int = 2): Double = "%.${decimals}f".format(this).toDouble()
 }
+
+fun Double.round(decimals: Int = 2): Double = "%.${decimals}f".format(this).toDouble()

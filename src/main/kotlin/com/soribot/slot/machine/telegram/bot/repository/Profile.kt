@@ -1,9 +1,11 @@
 package com.soribot.slot.machine.telegram.bot.repository
 
 
+import com.soribot.slot.machine.telegram.bot.service.LeaderboardService
+import com.soribot.slot.machine.telegram.bot.service.SlotMachineService
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.springframework.data.annotation.Id
 import org.springframework.data.redis.core.RedisHash
-import java.util.*
 
 @RedisHash("User")
 data class Profile(
@@ -19,3 +21,12 @@ data class Profile(
     @Id
     var id: Int = 0
 )
+
+@ExperimentalCoroutinesApi
+fun Profile.points() = ((numberOfJackpots * LeaderboardService.pointsForRecord) +
+    ((threeLemons + threeBars + threeCherries) * LeaderboardService.pointsForOther) +
+    diceWins * LeaderboardService.pointsForDice) +
+    LeaderboardService.defaultBonus - spentPoints.fromMarioshi()
+
+@ExperimentalCoroutinesApi
+fun Long.fromMarioshi() = this.toDouble() / SlotMachineService.marioshiNumber.toDouble()
