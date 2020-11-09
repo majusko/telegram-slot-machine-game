@@ -24,6 +24,7 @@ class ProfileManagementService(
         val barTrigger = listOf("bar")
         val cherryTrigger = listOf("ceresn", "wisnia")
         val spentTrigger = listOf("minul")
+        val diceTrigger = listOf("kostki", "kocky")
     }
 
     fun start(update: Update) = updateProfile(update.message)
@@ -76,6 +77,9 @@ class ProfileManagementService(
                     .also { afterEdit(it, message) }
                 spentTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
                     .apply { spentPoints = convertedAmount.toLong() }
+                    .also { afterEdit(it, message) }
+                diceTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
+                    .apply { diceWins = convertedAmount }
                     .also { afterEdit(it, message) }
             }
         }
