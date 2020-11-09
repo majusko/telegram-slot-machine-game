@@ -23,6 +23,7 @@ class ProfileManagementService(
         val lemonTrigger = listOf("citron", "cytryn")
         val barTrigger = listOf("bar")
         val cherryTrigger = listOf("ceresn", "wisnia")
+        val spentTrigger = listOf("minul")
     }
 
     fun start(update: Update) = updateProfile(update.message)
@@ -72,6 +73,9 @@ class ProfileManagementService(
                     .also { afterEdit(it, message) }
                 cherryTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
                     .apply { threeCherries = convertedAmount }
+                    .also { afterEdit(it, message) }
+                spentTrigger.any { field.contains(it) } -> profileService.findByIdOrRegister(message.replyToMessage)
+                    .apply { spentPoints = convertedAmount.toLong() }
                     .also { afterEdit(it, message) }
             }
         }
