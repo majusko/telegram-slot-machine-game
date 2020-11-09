@@ -1,6 +1,8 @@
 package com.soribot.slot.machine.telegram.bot.service
 
 import com.soribot.slot.machine.telegram.bot.bot.BotSender
+import com.soribot.slot.machine.telegram.bot.repository.ChatProfile
+import com.soribot.slot.machine.telegram.bot.repository.ChatProfileRepository
 import com.soribot.slot.machine.telegram.bot.repository.Profile
 import com.soribot.slot.machine.telegram.bot.repository.ProfileRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.Message
 @Service
 @ExperimentalCoroutinesApi
 class ProfileService(
+    private val chatProfileRepository: ChatProfileRepository,
     private val profileRepository: ProfileRepository,
     private val botSender: BotSender,
     private val redisTemplate: RedisTemplate<String, Long>
@@ -23,6 +26,7 @@ class ProfileService(
         const val dicePushCount = "DicePushCount"
         const val spentPointsCount = "SpentPointsCount"
     }
+
 
     fun getSlotPushCount(id: Int) = redisTemplate.boundValueOps(slotPushCount + "_" + id).get() ?: 0
 
@@ -57,7 +61,18 @@ class ProfileService(
         id = message.from.id
     ).let { saveAndNotify(it, message.chatId) }
 
+    fun findInChatById(id: String) = chatProfileRepository.findByIdOrNull(id)
+
+    fun findInChatOrRegister(message: Message) = findInChatById(message.toChatProfileId()) ?: ChatProfile(
+        firstName = message.from.firstName ?: "",
+        lastName = message.from.lastName ?: "",
+        username = message.from.userName ?: "",
+        id = message.toChatProfileId()
+    ).let { save(it) }
+
     fun save(profile: Profile) = profileRepository.save(profile)
+
+    fun save(profile: ChatProfile) = chatProfileRepository.save(profile)
 
     fun findAll() = profileRepository.findAll().toList()
 
@@ -68,4 +83,6 @@ class ProfileService(
         }
 
     private fun Profile.toInfoMessage() = profileInformation.format("$firstName $lastName", numberOfJackpots)
+
+    private fun Message.toChatProfileId() = "${from.id}_${chatId}"
 }

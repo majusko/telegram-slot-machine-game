@@ -4,6 +4,7 @@ import com.soribot.slot.machine.telegram.bot.bot.BotSender
 import com.soribot.slot.machine.telegram.bot.repository.Profile
 import com.soribot.slot.machine.telegram.bot.repository.points
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update

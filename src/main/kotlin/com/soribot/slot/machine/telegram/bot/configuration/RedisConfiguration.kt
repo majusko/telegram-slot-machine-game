@@ -44,4 +44,14 @@ class RedisConfiguration {
         template.valueSerializer = GenericToStringSerializer(Long::class.java)
         return template
     }
+
+    @Bean
+    fun redisListTemplate(redisConnectionFactory: LettuceConnectionFactory): RedisTemplate<String, List<Int>> {
+        val template = RedisTemplate<String, List<Int>>()
+        template.setConnectionFactory(redisConnectionFactory)
+        template.keySerializer = StringRedisSerializer()
+        template.hashValueSerializer = GenericToStringSerializer(List::class.java)
+        template.valueSerializer = GenericToStringSerializer(List::class.java)
+        return template
+    }
 }
